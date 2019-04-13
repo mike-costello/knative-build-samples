@@ -1,0 +1,25 @@
+apiVersion: build.knative.dev/v1alpha1
+kind: Build
+metadata:
+  name: camel-simple-build
+spec:
+      serviceAccountName: builder
+      source:
+          git:
+            url: https://github.com/mike-costello/camel-rest-sample-simple
+            revision: master
+      template:
+          name: java8-buildah
+          arguments:
+            - name: IMAGE_NAME
+              value: "camel-simple:0.0.1"
+            - name: CONTEXT_DIR
+              value: ""
+            - name: JAVA_APP_NAME
+              value: "camel-simple.jar"
+            - name: CACHE
+              value: m2-cache
+      volumes:
+          - name: m2-cache
+            persistentVolumeClaim:
+              claimName: m2-cache

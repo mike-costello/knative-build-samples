@@ -1,0 +1,76 @@
+apiVersion: build.knative.dev/v1alpha1
+kind: BuildTemplate
+metadata:
+  name: java8-buildah
+spec:
+  parameters:
+    - name: JAVA_APP_BUILDER_IMAGE
+      description: The builder image used to build the java application
+      default: docker.io/maven:3.6-jdk-8-alpine
+    - name: JAVA_APP_NAME
+      description: The jar file name of the build artifact
+      default: test
+    - name: BUILDER_IMAGE
+      description: The builder image to build the OCI container 
+      default: quay.io/mickcos/buildah
+      #default: quay.io/workspace7/buildah
+    - name: IMAGE_NAME
+      description: The name of the image to build and push, you can use %a for artifact id from pom.xml and %v for version from pom.xml and %g for group from pom.xml
+      default: testing
+    - name: CONTEXT_DIR
+      description: The directory containing the app, relative to the source repository root
+      default: .
+    - name: CACHE
+      description: The name of the volume for caching Maven artifacts
+      default: empty-dir-volume
+    - name: BUILDAH_SCRIPT
+      description: The name of buildah script that will be used to build OCI container
+      default: buildah.sh
+
+  steps:
+    - name: build-app
+      image: ${JAVA_APP_BUILDER_IMAGE}
+      args:
+        - mvn 
+        - package 
+        - -Duser.home=/builder/home
+        - -sconfiguration/settings.xml
+      workingDir: /workspace/${CONTEXT_DIR}
+      volumeMounts:
+        - name: ${CACHE}
+          mountPath: /builder/home/.m2
+          subPath: m2-cache
+    - name: build-image
+      image: ${BUILDER_IMAGE}
+      workingDir: /workspace/${CONTEXT_DIR}
+      #args: ["bud",".", "&& buildah push --tls-verify=false --creds=openshift:$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) docker://docker-registry.default.svc:5000/$POD_NAMESPACE/$IMAGE_NAME"]
+      #args: ["bash","-c","/workspace/${BUILDAH_SCRIPT}"]
+      #args: ["${BUILDAH_SCRIPT}"]
+      args: ["bud", "-tmyproject/${IMAGE_NAME}", "."]
+      env:
+      - name: CONTEXT_DIR
+        value: "${CONTEXT_DIR}"
+      - name: IMAGE_NAME
+        value: "${IMAGE_NAME}"
+      - name: JAVA_APP_NAME
+        value: "${JAVA_APP_NAME}"
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      volumeMounts:
+         - name: varlibcontainers
+           mountPath: /var/lib/containers
+    - name: push-image
+      image: ${BUILDER_IMAGE}
+      #args: ["push", "--tls-verify=false", "--creds=openshift:$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)","localhost/myproject/${IMAGE_NAME}", "docker://docker-registry.default.svc:5000/myproject/${IMAGE_NAME}"]
+      args: ["push", "--tls-verify=false", "--creds=uid:pwd","localhost/myproject/${IMAGE_NAME}", "quay.io/mickcos/${IMAGE_NAME}"]
+      #args: ["push", "--tls-verify=false", "--creds=admin:tDEz65NBwJ7SCbQxUzP4idbl_cykD1TJXjCGN3B5uoU","localhost/myproject/${IMAGE_NAME}", "docker://docker-registry.default.svc:5000/myproject/${IMAGE_NAME}"]
+      volumeMounts:
+         - name: varlibcontainers
+           mountPath: /var/lib/containers
+    
+    
+  volumes:
+    - name: varlibcontainers
+      emptyDir: {}
