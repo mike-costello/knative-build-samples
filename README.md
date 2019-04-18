@@ -11,6 +11,18 @@ Notes on automated installer:
 - set `OPENSHIFT_VERSION` to v3.11.43 in `install-on-minishift.sh`
 - set `minishift config set skip-check-openshift-release true` to workaround CDK v3.7 [bug](https://access.redhat.com/documentation/en-us/red_hat_container_development_kit/3.7/html/release_notes_and_known_issues/known_issues)
 
+Increase max user namespaces:
+
+The user namespace values on RHEL 7 / Centos 7 are set to 0 by default. The value needs to be updated to enable buildah container builds.
+
+```
+minishift ssh
+
+sudo -i
+
+echo 15000 > /proc/sys/user/max_user_namespaces
+```
+
 ## Deploy a sample Fuse build template
 
 The Knative build template specifies a destination repository where images will be published. The build template will usually provide or reference credentials for access to the destination repository.
@@ -37,10 +49,6 @@ The provided build template already references a secret called `quay`. Substitut
     - name: registry-credentials
       secret:
         secretName: quay
-```
-
-```
-oc apply -f build/java8-buildah-template.yaml
 ```
 
 ### Integrate with the internal OpenShift registry
@@ -98,6 +106,22 @@ Finally, change the default destination registry to the internal registry in the
     - name: DESTINATION_REGISTRY
       description: The registry where resulting image is pushed
       default: docker-registry.default.svc:5000/myproject
+```
+
+### Create a PVC for Maven cache
+
+The provided resource definition requests an 8Gi volume to store maven artifacts for faster builds.
+
+```
+oc apply -f build/m2-pvc.yaml
+```
+
+### Apply the build template
+
+Review the parameter default values in `build/java8-buildah-template.yaml` and adjust as necessary. Then create the Knative build template resource which may include some adjustments from previous depending on registry integration.
+
+```
+oc apply -f build/java8-buildah-template.yaml
 ```
 
 
