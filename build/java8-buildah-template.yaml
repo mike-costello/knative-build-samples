@@ -64,7 +64,7 @@ spec:
            mountPath: /var/lib/containers
     - name: push-image
       image: ${BUILDER_IMAGE}
-      args: ["push", "--authfile=/reg/.dockerconfigjson", "--tls-verify=false", "localhost/myproject/${IMAGE_NAME}", "${DESTINATION_REGISTRY}/${IMAGE_NAME}"]
+      args: ["push", "--authfile=/reg/.dockercfg", "--tls-verify=false", "localhost/myproject/${IMAGE_NAME}", "${DESTINATION_REGISTRY}/${IMAGE_NAME}"]
       volumeMounts:
          - name: varlibcontainers
            mountPath: /var/lib/containers
@@ -75,4 +75,4 @@ spec:
       emptyDir: {}
     - name: registry-credentials
       secret:
-        secretName: quay
+        secretName: builder-dockercfg-xxxxx
