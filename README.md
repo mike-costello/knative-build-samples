@@ -22,6 +22,21 @@ sudo -i
 
 echo 15000 > /proc/sys/user/max_user_namespaces
 ```
+## Create a Buildah image
+
+Use the OpenShift CLI to create a build config.
+
+```
+oc new-build --strategy docker --binary --docker-image fedora --name buildah
+```
+
+Run a build from the Dockerfile provided.
+
+```
+oc start-build buildah --from-file=images/buildah/buildah-fedora/Dockerfile --follow
+```
+
+The resulting image built from the Dockerfile is pushed to a tag on an image stream called `buildah`. This image will be leveraged by Knative build pods during build and push image steps.
 
 ## Deploy a sample Fuse build template
 

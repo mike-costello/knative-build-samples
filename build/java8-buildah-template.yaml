@@ -12,7 +12,7 @@ spec:
       default: test
     - name: BUILDER_IMAGE
       description: The builder image to build the OCI container
-      default: quay.io/mickcos/buildah
+      default: myproject/buildah
     - name: IMAGE_NAME
       description: The name of the image to build and push, you can use %a for artifact id from pom.xml and %v for version from pom.xml and %g for group from pom.xml
       default: testing
