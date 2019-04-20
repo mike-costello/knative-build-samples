@@ -114,14 +114,14 @@ Change the secret name in the volume called `registry-credentials` in the build 
         secretName: quay-credentials
 ```
 
-Finally, change the default destination registry to the internal registry in the build template.
+Finally, change the default destination registry to the external registry in the build template.
 
 ```
   parameters:
     ...
     - name: DESTINATION_REGISTRY
       description: The registry where resulting image is pushed
-      default: quay.io/davgordo
+      default: quay.io/johnnydev
 ```
 
 ### Create a PVC for Maven cache
