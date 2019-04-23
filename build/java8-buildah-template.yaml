@@ -22,9 +22,6 @@ spec:
     - name: CACHE
       description: The name of the volume for caching Maven artifacts
       default: empty-dir-volume
-    - name: BUILDAH_SCRIPT
-      description: The name of buildah script that will be used to build OCI container
-      default: buildah.sh
     - name: DESTINATION_REGISTRY
       description: The registry where resulting image is pushed
       default: docker-registry.default.svc:5000/myproject
