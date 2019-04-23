@@ -37,11 +37,9 @@ oc start-build buildah --from-file=images/buildah/buildah-fedora/Dockerfile --fo
 
 The resulting image built from the Dockerfile is pushed to a tag on an image stream called `buildah`. This image will be leveraged by Knative build pods during build and push image steps.
 
-## Deploy a sample Fuse build template
+## Deploy a sample Knative build template
 
 The Knative build template specifies a destination repository where images will be published. The build template will usually provide or reference credentials for access to the destination repository.
-
-The following sections describe configuration for pushing newly built images to the internal OpenShift registry and to an external registry.
 
 ### Integrate with the internal OpenShift registry
 
@@ -75,54 +73,6 @@ Change the secret name in the volume called `registry-credentials` in the build 
         secretName: builder-dockercfg-g88mm
 ```
 
-### Integrate with an external registry
-
-To integrate with an external image registry, for example [quay.io](https://quay.io), create a secret to store credentials to access the registry. OpenShift CLI tooling provides a command specifically for storing docker registry credentials as a secret.
-
-```
-oc create secret docker-registry <secret-name> --docker-server=<registry-name> --docker-username=<username> --docker-password=<password>
-```
-
-For example:
-
-```
-oc create secret docker-registry quay-credentials --docker-server=quay.io --docker-username=johnnydev --docker-password=tubular
-```
-
-Modify the `--authfile` flag on the buildah push command in the build template to look for a file called `.dockerconfigjson` as is the convention for the OpenShift docker-registry secret type.
-
-```
-  steps:
-    ...
-    - name: push-image
-      image: ${BUILDER_IMAGE}
-      args: ["push", "--authfile=/reg/.dockerconfigjson", "--tls-verify=false", "localhost/myproject/${IMAGE_NAME}", "${DESTINATION_REGISTRY}/${IMAGE_NAME}"]
-      volumeMounts:
-         - name: varlibcontainers
-           mountPath: /var/lib/containers
-         - name: registry-credentials
-           mountPath: /reg
-```
-
-Change the secret name in the volume called `registry-credentials` in the build template (`build/java8-buildah-template.yaml`) to the secret name determined during the previous step, in the example, the value is changed to `quay-credentials`.
-
-```
-  volumes:
-    ...
-    - name: registry-credentials
-      secret:
-        secretName: quay-credentials
-```
-
-Finally, change the default destination registry to the external registry in the build template.
-
-```
-  parameters:
-    ...
-    - name: DESTINATION_REGISTRY
-      description: The registry where resulting image is pushed
-      default: quay.io/johnnydev
-```
 
 ### Create a PVC for Maven cache
 
@@ -206,4 +156,54 @@ Once the newly built container image is successfully pushed to the destination r
 $ oc get pods
 NAME                            READY     STATUS      RESTARTS   AGE
 camel-simple-build-pod-326c8a   0/1       Completed   0          5m
+```
+
+
+## External registry integration notes
+
+To integrate with an external image registry, for example [quay.io](https://quay.io), create a secret to store credentials to access the registry. OpenShift CLI tooling provides a command specifically for storing docker registry credentials as a secret.
+
+```
+oc create secret docker-registry <secret-name> --docker-server=<registry-name> --docker-username=<username> --docker-password=<password>
+```
+
+For example:
+
+```
+oc create secret docker-registry quay-credentials --docker-server=quay.io --docker-username=johnnydev --docker-password=tubular
+```
+
+Modify the `--authfile` flag on the buildah push command in the build template to look for a file called `.dockerconfigjson` as is the convention for the OpenShift docker-registry secret type.
+
+```
+  steps:
+    ...
+    - name: push-image
+      image: ${BUILDER_IMAGE}
+      args: ["push", "--authfile=/reg/.dockerconfigjson", "--tls-verify=false", "localhost/myproject/${IMAGE_NAME}", "${DESTINATION_REGISTRY}/${IMAGE_NAME}"]
+      volumeMounts:
+         - name: varlibcontainers
+           mountPath: /var/lib/containers
+         - name: registry-credentials
+           mountPath: /reg
+```
+
+Change the secret name in the volume called `registry-credentials` in the build template (`build/java8-buildah-template.yaml`) to the secret name determined during the previous step, in the example, the value is changed to `quay-credentials`.
+
+```
+  volumes:
+    ...
+    - name: registry-credentials
+      secret:
+        secretName: quay-credentials
+```
+
+Finally, change the default destination registry to the external registry in the build template.
+
+```
+  parameters:
+    ...
+    - name: DESTINATION_REGISTRY
+      description: The registry where resulting image is pushed
+      default: quay.io/johnnydev
 ```
