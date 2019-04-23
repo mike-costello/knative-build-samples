@@ -19,4 +19,4 @@ spec:
               httpGet:
                 path: /health
               initialDelaySeconds: 0
-              periodSeconds: 3
+              periodSeconds: 1

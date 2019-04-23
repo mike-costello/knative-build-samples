@@ -157,9 +157,69 @@ $ oc get pods
 NAME                            READY     STATUS      RESTARTS   AGE
 camel-simple-build-pod-326c8a   0/1       Completed   0          5m
 ```
+## Deploy a Knative service
 
+### Skip tag-to-digest resolution
 
-## External registry integration notes
+Knative is not yet able resolve the internal OpenShift registry or an image stream reference for tag-to-digest resolution. The sample service definition specifies an image stream, however, the standard Go libraries used in the Knative Operator do not understand how to parse OpenShift image stream references. The Go library assumes that a reference like `myproject/camel-simple:0.0.1` means that the implied registry is `docker.io`. So, to skip tag-to-digest resolution for image stream references, add `index.docker.io` to the list of skipped registries.
+
+A configmap is provided to adjust the Knative configuration.
+
+```
+oc apply -f config/config-controller.yaml
+```
+
+### Apply the service
+
+Apply the service configuration.
+
+```
+oc apply -f services/camel-simple-service.yaml
+```
+
+This action should spin up a pod that is running the example service. Knative will spin down the pod shortly, if it is not receiving any traffic.
+
+## Invoke the service
+
+### Find the IP and port of the Istio Ingress Controller
+
+The IP address to invoke the service should be simply the minishift IP address. Find the IP with this command:
+
+```
+minishift ip
+```
+
+The `istio-ingressgateway` service in the `istio-system` namespace has a port labeled labeled `http2`. This port will be used to invoke the service from outside of the OpenShift cluster, so use the `nodePort` value.
+
+This is a quick command for obtaining the port number to use for invocation.
+
+```
+oc get svc istio-ingressgateway --namespace istio-system --output 'jsonpath={.spec.ports[?(@.port==80)].nodePort}'
+```
+### Find the ingress domain for the service
+
+Each service will listen for requests to a unique domain. Find the domain for the auto-generated Knative route.
+
+```
+$ oc get route.serving.knative.dev camel-simple-svc
+NAME               DOMAIN                                   READY     REASON
+camel-simple-svc   camel-simple-svc.myproject.example.com   True      
+```
+
+### Make a sample request
+
+With the cluster IP, ingress node port, and the Knative route domain, we can form a curl request that invokes the service.
+
+```
+curl <cluster ip>:<node port>/camel-rest-sql/books -H 'Host:camel-simple-svc.myproject.example.com'
+"Sup Son This is a Book"
+```
+
+Notice that if a pod for the service is not running when the request is made, a pod is instantiated to service the request.
+
+## Additional notes
+
+### External registry integration
 
 To integrate with an external image registry, for example [quay.io](https://quay.io), create a secret to store credentials to access the registry. OpenShift CLI tooling provides a command specifically for storing docker registry credentials as a secret.
 
