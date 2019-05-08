@@ -14,12 +14,9 @@ spec:
             alpha.image.policy.openshift.io/resolve-names: "*"
         spec:
           container:
-            # This should be a fully qualified domain name e.g. quay.io/example/myimage:mytag
-            # This is configured to use the inbuilt default docker registry
-            image: quay.io/mickcos/camel-simple:0.0.1
+            image: myproject/camel-simple:0.0.1
             readinessProbe:
               httpGet:
                 path: /health
               initialDelaySeconds: 0
-              periodSeconds: 3
-            
+              periodSeconds: 1

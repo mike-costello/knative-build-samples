@@ -2,6 +2,8 @@ apiVersion: build.knative.dev/v1alpha1
 kind: Build
 metadata:
   name: camel-simple-build
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
 spec:
       serviceAccountName: builder
       source:
