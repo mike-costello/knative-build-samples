@@ -3,12 +3,30 @@
 
 ## Install Knative with Minishift
 
-Follow instructions here:
+For detailed installation notes, including how to install manually, see:
 https://github.com/knative/docs/blob/master/docs/install/Knative-with-Minishift.md
 
-Notes on automated installer:
+Otherwise, use our installer that is configured specifically for this workshop:
+https://github.com/davgordo/knative-operators
 
-- set `OPENSHIFT_VERSION` to v3.11.43 in `install-on-minishift.sh`
+```
+git clone git@github.com:davgordo/knative-operators.git
+
+cd knative-operators
+
+./etc/scripts/install-on-minishift.sh
+```
+
+Note: If need to re-run the install, but you don't want to start over:
+
+```
+eval "$(minishift oc-env)"
+
+oc login -u admin -p admin
+
+./etc/scripts/install.sh
+```
+
 
 Increase max user namespaces:
 
@@ -196,8 +214,8 @@ camel-simple-svc   camel-simple-svc.myproject.example.com   True
 With the cluster IP, ingress node port, and the Knative route domain, we can form a curl request that invokes the service.
 
 ```
-curl <cluster ip>:<node port>/camel-rest-sql/books -H 'Host:camel-simple-svc.myproject.example.com'
-"Sup Son This is a Book"
+curl <cluster ip>:<node port>/camel-rest-sql/books/books/1 -H 'Host:camel-simple-svc.myproject.example.com'
+"Nancy Drew and The Mystery of the Floating Fedora"
 ```
 
 Notice that if a pod for the service is not running when the request is made, a pod is instantiated to service the request.
