@@ -8,8 +8,6 @@ spec:
     configuration:
       revisionTemplate:
         metadata:
-          labels:
-            app: test
           annotations:
             alpha.image.policy.openshift.io/resolve-names: "*"
         spec:
