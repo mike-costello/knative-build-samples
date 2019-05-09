@@ -21,21 +21,6 @@ sudo -i
 
 echo 15000 > /proc/sys/user/max_user_namespaces
 ```
-## Create a Buildah image
-
-Use the OpenShift CLI to create a build config.
-
-```
-oc new-build --strategy docker --binary --docker-image fedora --name buildah
-```
-
-Run a build from the Dockerfile provided.
-
-```
-oc start-build buildah --from-file=images/buildah/buildah-fedora/Dockerfile --follow
-```
-
-The resulting image built from the Dockerfile is pushed to a tag on an image stream called `buildah`. This image will be leveraged by Knative build pods during build and push image steps.
 
 ## Deploy a sample Knative build template
 
@@ -218,6 +203,24 @@ curl <cluster ip>:<node port>/camel-rest-sql/books -H 'Host:camel-simple-svc.myp
 Notice that if a pod for the service is not running when the request is made, a pod is instantiated to service the request.
 
 ## Additional notes
+
+### Create your own Buildah image
+
+Use the OpenShift CLI to create a build config.
+
+```
+oc new-build --strategy docker --binary --docker-image fedora --name buildah
+```
+
+Run a build from the Dockerfile provided.
+
+```
+oc start-build buildah --from-file=images/buildah/buildah-fedora/Dockerfile --follow
+```
+
+The resulting image built from the Dockerfile is pushed to a tag on an image stream called `buildah`. This image will be leveraged by Knative build pods during build and push image steps.
+
+Change the `BUILDER_IMAGE` default value in `java8-buildah-template.yml` to `myproject/buildah`
 
 ### External registry integration
 
