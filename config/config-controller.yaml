@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    serving.knative.dev/release: devel
+  name: config-controller
+  namespace: knative-serving
+data:
+  queueSidecarImage: quay.io/openshift-knative/knative-serving-queue:v0.4.1
+  registriesSkippingTagResolving: index.docker.io
