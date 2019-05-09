@@ -6,5 +6,5 @@ metadata:
   name: config-controller
   namespace: knative-serving
 data:
-  queueSidecarImage: quay.io/openshift-knative/knative-serving-queue:v0.4.1
+  queueSidecarImage: quay.io/openshift-knative/knative-serving-queue:v0.5.1
   registriesSkippingTagResolving: index.docker.io
