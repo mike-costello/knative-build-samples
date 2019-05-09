@@ -9,6 +9,7 @@ spec:
       revisionTemplate:
         metadata:
           annotations:
+            alpha.image.policy.openshift.io/resolve-names: "*"
             #default autoscaler
             autoscaling.knative.dev/class: kpa.autoscaling.knative.dev
             autoscaling.knative.dev/metric: concurrency
@@ -20,10 +21,9 @@ spec:
             autoscaling.knative.dev/maxScale: "10"
         spec:
           container:
-            image: quay.io/mickcos/camel-simple:0.0.1
-            imagePullPolicy: Always
+            image: myproject/camel-simple:0.0.1
             readinessProbe:
               httpGet:
                 path: /health
               initialDelaySeconds: 0
-              periodSeconds: 3
+              periodSeconds: 1
