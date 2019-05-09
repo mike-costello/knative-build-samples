@@ -11,8 +11,8 @@ spec:
       description: The jar file name of the build artifact
       default: test
     - name: BUILDER_IMAGE
-      description: The builder image to build the OCI container
-      default: myproject/buildah
+      description: The builder image to build the OCI container. Switch this to 'myproject/buildah', for example, if you built you own Buildah image.
+      default: quay.io/mickcos/buildah
     - name: IMAGE_NAME
       description: The name of the image to build and push, you can use %a for artifact id from pom.xml and %v for version from pom.xml and %g for group from pom.xml
       default: testing
