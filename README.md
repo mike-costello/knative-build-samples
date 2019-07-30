@@ -1,5 +1,5 @@
 
-# Knative Build Samples for that Special Cloud Native Build in Your Life
+# Knative Build and Serving Samples To Take "Legacy" MicroServices into the Age of Serverless
 
 ## Install Knative with Minishift
 
